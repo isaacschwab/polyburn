@@ -1,12 +1,12 @@
 import { SyncOutlined } from "@ant-design/icons";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { Button, Card, DatePicker, Divider, Input, List, Progress, Slider, Spin, Switch } from "antd";
 import React, { useState } from "react";
 import { Address, Balance } from "../components";
 
 export default function IkeLanding({
-  purpose,
-  setPurposeEvents,
+  canMint,
+  setIkeTokenEvents,
   address,
   mainnetProvider,
   localProvider,
@@ -16,7 +16,7 @@ export default function IkeLanding({
   readContracts,
   writeContracts,
 }) {
-  const [newPurpose, setNewPurpose] = useState("loading...");
+  const [numberToMint, setNumberToMint] = useState("loading...");
 
   return (
     <div>
@@ -25,12 +25,13 @@ export default function IkeLanding({
       */}
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
         <h2>Example UI:</h2>
-        <h4>purpose: {purpose}</h4>
+        <h4>Can mint: {canMint?.toString()}</h4>
         <Divider />
         <div style={{ margin: 8 }}>
           <Input
+            type="number"
             onChange={e => {
-              setNewPurpose(e.target.value);
+              setNumberToMint(Number(e.target.value));
             }}
           />
           <Button
@@ -38,7 +39,12 @@ export default function IkeLanding({
             onClick={async () => {
               /* look how you call setPurpose on your contract: */
               /* notice how you pass a call back for tx updates too */
-              const result = tx(writeContracts.YourContract.setPurpose(newPurpose), update => {
+              console.log(numberToMint)
+              let price = useContractReader(readContracts, "IkeToken", "_tokenPrice");
+              console.log(price)
+              var totalPrice = BigNumber.from(price).mul(numberToMint)
+              console.log(totalPrice)
+              const result = tx(writeContracts.IkeToken.mintSupporter(numberToMint, { value: totalPrice}), update => {
                 console.log("📡 Transaction Update:", update);
                 if (update && (update.status === "confirmed" || update.status === 1)) {
                   console.log(" 🍾 Transaction " + update.hash + " finished!");
@@ -57,7 +63,33 @@ export default function IkeLanding({
               console.log(await result);
             }}
           >
-            Set Purpose!
+            Mint Token
+          </Button>
+          <Button
+            style={{ marginTop: 8 }}
+            onClick={async () => {
+              /* look how you call setPurpose on your contract: */
+              /* notice how you pass a call back for tx updates too */
+              const result = tx(writeContracts.IkeToken.toggleSale(), update => {
+                console.log("📡 Transaction Update:", update);
+                if (update && (update.status === "confirmed" || update.status === 1)) {
+                  console.log(" 🍾 Transaction " + update.hash + " finished!");
+                  console.log(
+                    " ⛽️ " +
+                    update.gasUsed +
+                    "/" +
+                    (update.gasLimit || update.gas) +
+                    " @ " +
+                    parseFloat(update.gasPrice) / 1000000000 +
+                    " gwei",
+                  );
+                }
+              });
+              console.log("awaiting metamask/web3 confirm result...", result);
+              console.log(await result);
+            }}
+          >
+            Toggle Sale!
           </Button>
         </div>
         <Divider />
@@ -154,7 +186,7 @@ export default function IkeLanding({
         📑 Maybe display a list of events?
           (uncomment the event and emit line in YourContract.sol! )
       */}
-      <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+      {/* <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
         <h2>Events:</h2>
         <List
           bordered
@@ -168,7 +200,7 @@ export default function IkeLanding({
             );
           }}
         />
-      </div>
+      </div> */}
 
       <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
         <Card>

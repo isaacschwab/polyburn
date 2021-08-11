@@ -21,7 +21,7 @@ import {
   useUserSigner,
 } from "./hooks";
 // import Hints from "./Hints";
-import { ExampleUI, Hints, Subgraph } from "./views";
+import { ExampleUI, Hints, Subgraph, IkeLanding } from "./views";
 import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
@@ -234,9 +234,11 @@ function App(props) {
 
   // keep track of a variable from the contract in the local React state:
   const purpose = useContractReader(readContracts, "YourContract", "purpose");
+  const canMint = useContractReader(readContracts, "IkeToken", "_canMint");
 
   // 📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
+  const setIkeTokenEvents = useEventListener(readContracts, "IkeToken", "ToggleSale", localProvider, 1);
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -479,7 +481,7 @@ function App(props) {
             */}
 
             <Contract
-              name="YourContract"
+              name="IkeToken"
               signer={userSigner}
               provider={localProvider}
               address={address}
@@ -507,6 +509,21 @@ function App(props) {
               readContracts={readContracts}
               purpose={purpose}
               setPurposeEvents={setPurposeEvents}
+            />
+          </Route>
+          <Route path="/ikelanding">
+            <IkeLanding
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              canMint={canMint}
+              setIkeTokenEvents={setIkeTokenEvents}
             />
           </Route>
           <Route path="/mainnetdai">
